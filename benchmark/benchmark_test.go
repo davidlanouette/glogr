@@ -22,8 +22,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-logr/glogr"
 	"github.com/go-logr/logr"
+
+	"github.com/golang/glog"
+
+	"github.com/go-logr/glogr"
 )
 
 func init() {
@@ -40,9 +43,25 @@ func doInfoOneArg(b *testing.B, log logr.Logger) {
 }
 
 //go:noinline
+func doInfoOneArg_glog(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		glog.Info("this is", "a", "string")
+	}
+}
+
+//go:noinline
 func doInfoSeveralArgs(b *testing.B, log logr.Logger) {
 	for i := 0; i < b.N; i++ {
 		log.Info("multi",
+			"bool", true, "string", "str", "int", 42,
+			"float", 3.14, "struct", struct{ X, Y int }{93, 76})
+	}
+}
+
+//go:noinline
+func doInfoSeveralArgs_glog(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		glog.Info("multi",
 			"bool", true, "string", "str", "int", 42,
 			"float", 3.14, "struct", struct{ X, Y int }{93, 76})
 	}
@@ -58,9 +77,28 @@ func doV0Info(b *testing.B, log logr.Logger) {
 }
 
 //go:noinline
+func doV0Info_glog(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		glog.V(0).Info("multi",
+			"bool", true, "string", "str", "int", 42,
+			"float", 3.14, "struct", struct{ X, Y int }{93, 76})
+	}
+}
+
+
+//go:noinline
 func doV9Info(b *testing.B, log logr.Logger) {
 	for i := 0; i < b.N; i++ {
 		log.V(9).Info("multi",
+			"bool", true, "string", "str", "int", 42,
+			"float", 3.14, "struct", struct{ X, Y int }{93, 76})
+	}
+}
+
+//go:noinline
+func doV9Info_glog(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		glog.V(glog.Level(9)).Info("multi",
 			"bool", true, "string", "str", "int", 42,
 			"float", 3.14, "struct", struct{ X, Y int }{93, 76})
 	}
@@ -71,6 +109,16 @@ func doError(b *testing.B, log logr.Logger) {
 	err := fmt.Errorf("error message")
 	for i := 0; i < b.N; i++ {
 		log.Error(err, "multi",
+			"bool", true, "string", "str", "int", 42,
+			"float", 3.14, "struct", struct{ X, Y int }{93, 76})
+	}
+}
+
+//go:noinline
+func doError_glog(b *testing.B) {
+	err := fmt.Errorf("error message")
+	for i := 0; i < b.N; i++ {
+		glog.Error(err, "multi",
 			"bool", true, "string", "str", "int", 42,
 			"float", 3.14, "struct", struct{ X, Y int }{93, 76})
 	}
@@ -160,4 +208,41 @@ func BenchmarkFuncrWithValues(b *testing.B) {
 func BenchmarkFuncrWithName(b *testing.B) {
 	var log logr.Logger = glogr.New()
 	doWithName(b, log)
+}
+
+
+func BenchmarkDiscardInfoOneArg_glog(b *testing.B) {
+	doInfoOneArg_glog(b)
+}
+
+func BenchmarkDiscardInfoSeveralArgs_glog(b *testing.B) {
+	doInfoSeveralArgs_glog(b)
+}
+
+func BenchmarkDiscardV0Info_glog(b *testing.B) {
+	doV0Info_glog(b)
+}
+
+func BenchmarkDiscardV9Info_glog(b *testing.B) {
+	doV9Info_glog(b)
+}
+
+func BenchmarkFuncrInfoOneArg_glog(b *testing.B) {
+	doInfoOneArg_glog(b)
+}
+
+func BenchmarkFuncrInfoSeveralArgs_glog(b *testing.B) {
+	doInfoSeveralArgs_glog(b)
+}
+
+func BenchmarkFuncrV0Info_glog(b *testing.B) {
+	doV0Info_glog(b)
+}
+
+func BenchmarkFuncrV9Info_glog(b *testing.B) {
+	doV9Info_glog(b)
+}
+
+func BenchmarkFuncrError_glog(b *testing.B) {
+	doError_glog(b)
 }
